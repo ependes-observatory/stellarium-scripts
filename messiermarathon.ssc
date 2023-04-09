@@ -1,0 +1,237 @@
+//
+// Name: Messier Marathon from Épendes
+// Author: Nicolas Martignoni
+// Version: 1.0
+// License: GPL3
+// Description: Messier Marathon script for the Observatory of Épendes.
+// Based on code provided by ultrapre@github.com.
+// Made on Stellarium 23.1
+// Script reference: https://stellarium.org/doc/head/classStelMainScriptAPI.html
+
+// Include Stellarium standard translation, objects and save_state libraries.
+include("i18n.inc");
+include("common_objects.inc");
+include("save_state.inc");
+
+// Define script global variables.
+var defaultZoom = 80; // Set zoomed out field of view, in degrees.
+var focusedZoom = 3.2; // Set zoomed in field of view, in degrees.
+var landscape = "Épendes Observatory"; // Set landscape and location to use.
+var messierMarathonInitialTime = "19:15:00" // Set initial time of script.
+var messierMarathonDate = "2023-03-20"; // Set date of script.
+var timezone = "UTC+01:00"; // Set timezone to CET (winter time).
+var titleText = "Marathon de Messier à l'Observatoire d'Épendes"; // Set title.
+var showComments = true; // Show/hide comments.
+
+// Define saved state global variables.
+var initialState = "initialState";
+var initialFOV;
+var initialAlt;
+var initialAzi;
+
+// This table contains the Messier objects, with the observation time, and a comment.
+// Messier order inspired by Stelvision, https://www.stelvision.com/astro/le-marathon-messier/.
+var messierObjects = [
+  [ "19:30:00", "M74", tr("Very diffuse, very dark, very difficult") ],
+  [ "19:32:00", "M77", tr("Easier than M74, small") ],
+  [ "19:34:00", "M79", tr("Fuzzy, easy to find, accompanied by a small star") ],
+  [ "19:36:00", "M31", tr("Visible to the naked eye, no difficulty") ],
+  [ "19:38:00", "M32", tr("More difficult than M110 to verify, small") ],
+  [ "19:40:00", "M110", tr("In the west of M31, it is easy to detect") ],
+  [ "19:45:00", "M33", tr("Diffuse, great, brighter") ],
+  [ "19:47:00", "M103", tr("Small, easy to locate, don't confuse with NGC663") ],
+  [ "19:49:00", "M76", tr("Small, easy to locate, not as horror as imagined") ],
+  [ "19:51:00", "M34", tr("Large, scattered, easy") ],
+  [ "20:00:00", "M42", tr("Visible to the naked eye, better than M31") ],
+  [ "20:02:00", "M43", tr("Very close to M42, not easy to see the fuzzy") ],
+  [ "20:04:00", "M78", tr("Small, dark, few stars around") ],
+  [ "20:06:00", "M41", tr("Visible to the naked eye, easier") ],
+  [ "20:15:00", "M93", tr("Easy to locate and verify") ],
+  [ "20:17:00", "M46", tr("Large, scattered") ],
+  [ "20:19:00", "M47", tr("Large, scattered") ],
+  [ "20:21:00", "M50", tr("Bright, easy to verify, difficult to locate") ],
+  [ "20:30:00", "M1", tr("Easy to locate, easy to detect in a good transparency.") ],
+  [ "20:32:00", "M35", tr("Easy, more scattered") ],
+  [ "20:34:00", "M36", tr("Easy, scattered") ],
+  [ "20:45:00", "M37", tr("Easy, fuzzy") ],
+  [ "20:47:00", "M38", tr("Easy, large, scattered") ],
+  [ "20:49:00", "M45", tr("Difficulty is 0") ],
+  [ "21:00:00", "M48", tr("Large, difficult to locate, easy to confuse with NGC2506") ],
+  [ "21:02:00", "M67", tr("Bright, easy to verify") ],
+  [ "21:15:00", "M44", tr("Visible to the naked eye, big, bright") ],
+  [ "21:17:00", "M81", tr("Difficult to locate, bright, easy to verify") ],
+  [ "21:19:00", "M82", tr("Beside M81, vertical to each other") ],
+  [ "21:30:00", "M97", tr("Brighter than imagined, can be detected with 60 binos") ],
+  [ "21:32:00", "M108", tr("Darker than M97, long strips, look hard") ],
+  [ "21:34:00", "M109", tr("In the morning light, it looks too hard, dark") ],
+  [ "21:45:00", "M40", tr("Easy to verify with more than 20 times binos") ],
+  [ "21:47:00", "M106", tr("Difficult to locate, bright, easy to verify") ],
+  [ "22:00:00", "M94", tr("Easy to verify") ],
+  [ "22:02:00", "M63", tr("Difficult to locate, 4 stars of the inverted 7 shape beside") ],
+  [ "22:04:00", "M51", tr("Easy, you can see the companion galaxy") ],
+  [ "22:15:00", "M101", tr("Like the darkened M33, require a high sky conditions") ],
+  [ "22:17:00", "M102", tr("Not easy to locate, small, slightly dark") ],
+  [ "22:30:00", "M95", tr("Very close to M96 and M105") ],
+  [ "22:32:00", "M96", tr("Easy to locate and verify, assist to verify M95 and M105") ],
+  [ "22:34:00", "M105", tr("Dark") ],
+  [ "22:45:00", "M65", tr("Very close, it’s like M81 and M82") ],
+  [ "22:47:00", "M66", tr("There is NGC3628 nearby, don't think you have found a new comet") ],
+  [ "23:00:00", "M85", tr("Far away, but very bright, easy to find") ],
+  [ "23:02:00", "M100", tr("First find M100 and then find M98 and M99") ],
+  [ "23:04:00", "M98", tr("This bunch of things in the Virgo Cluster is not easy") ],
+  [ "23:06:00", "M99", tr("M99 is easier to verify than M98") ],
+  [ "23:15:00", "M88", tr("Just above M90, almost like M90") ],
+  [ "23:17:00", "M91", tr("Look hard") ],
+  [ "23:30:00", "M86", tr("M84 are together, closer to NGC4438") ],
+  [ "23:32:00", "M84", tr("There is an NGC4438 near M84 and M86, don't make a mistake") ],
+  [ "23:34:00", "M87", tr("As bright as M85, easy to verify") ],
+  [ "23:45:00", "M89", tr("Dark, hard to look") ],
+  [ "23:47:00", "M90", tr("Easy to detect than M89, easy to locate") ],
+  [ "23:49:00", "M58", tr("Easy to locate, detect once") ],
+  [ "00:00:00", "M53", tr("Easy to locate") ],
+  [ "00:02:00", "M64", tr("Not easy to locate, no bright stars nearby") ],
+  [ "00:04:00", "M60", tr("It’s an easier one") ],
+  [ "00:15:00", "M59", tr("Beside M60, it is easy to verify") ],
+  [ "00:17:00", "M49", tr("Small, not easy to locate, a little difficult") ],
+  [ "00:19:00", "M61", tr("Not easy to locate, easy to verify") ],
+  [ "01:30:00", "M104", tr("Easy to locate and verify, small") ],
+  [ "01:32:00", "M68", tr("Easy to verify, a star 5 magnitude nearby") ],
+  [ "02:15:00", "M83", tr("Bright and big in the galaxies, not hard to find") ],
+  [ "03:00:00", "M92", tr("It may be easier to locate from the Dragon") ],
+  [ "03:02:00", "M13", tr("Famous, like the shoulder pole star") ],
+  [ "03:04:00", "M3", tr("Not easy to locate, bright") ],
+  [ "03:15:00", "M39", tr("Larger than imagined, very scattered, not easy to locate") ],
+  [ "03:17:00", "M52", tr("Difficult to locate, easy to detect and verify") ],
+  [ "03:30:00", "M57", tr("Small, 20 times or more is still easy to detect") ],
+  [ "03:32:00", "M56", tr("More difficult than M57, not easy to locate, very small") ],
+  [ "03:34:00", "M29", tr("Easy, small, looks like a cluster of stars 7-8 magnitude") ],
+  [ "04:00:00", "M4", tr("Bright, big, don't forget to detect NGC6144 nearby") ],
+  [ "04:02:00", "M80", tr("Not easy to verify at low power, easy at high power") ],
+  [ "04:04:00", "M5", tr("Easy to verify in a right location") ],
+  [ "04:15:00", "M27", tr("Find M71 first, then find M27, and will be easier to locate") ],
+  [ "04:17:00", "M71", tr("Easy to locate, easy to verify in 50 binos") ],
+  [ "04:19:00", "M12", tr("Bright, like M13, easy to find") ],
+  [ "04:30:00", "M10", tr("Detect it with M12, brighter than M12") ],
+  [ "04:32:00", "M14", tr("Difficult to locate, easy to verify") ],
+  [ "04:45:00", "M107", tr("Easy to locate and verify") ],
+  [ "04:47:00", "M9", tr("Small, not easy to verify") ],
+  [ "04:49:00", "M19", tr("Follow the line of M4 and Antares, easy to verify") ],
+  [ "04:51:00", "M62", tr("Looking down from M19, darker than M19, but easy to verify") ],
+  [ "05:00:00", "M11", tr("Easy to locate, bright, and almost like M13") ],
+  [ "05:02:00", "M26", tr("Easy to locate M26 by M11") ],
+  [ "05:04:00", "M16", tr("Easy") ],
+  [ "05:06:00", "M17", tr("Easy") ],
+  [ "05:08:00", "M18", tr("Easy") ],
+  [ "05:10:00", "M24", "" ],
+  [ "05:15:00", "M23", tr("Large, a little fuzzy") ],
+  [ "05:17:00", "M25", tr("Big, easy") ],
+  [ "05:19:00", "M21", tr("Beside M20") ],
+  [ "05:21:00", "M20", tr("It’s not hard to see the diffuse nebula") ],
+  [ "05:23:00", "M8", tr("Visible to the naked eye, extremely easy") ],
+  [ "05:30:00", "M15", tr("Easy to locate and verify") ],
+  [ "05:32:00", "M22", tr("M13 second") ],
+  [ "05:34:00", "M28", tr("Easy to locate and verify, bright") ],
+  [ "05:45:00", "M72", "" ],
+  [ "05:47:00", "M73", "" ],
+  [ "05:49:00", "M2", "" ],
+  [ "06:00:00", "M6", tr("Too big, scattered, not easy to verify") ],
+  [ "06:02:00", "M7", tr("Bigger than M6") ],
+  [ "06:04:00", "M69", "" ],
+  [ "06:06:00", "M70", "" ],
+  [ "06:15:00", "M54", "" ],
+  [ "06:17:00", "M55", "" ],
+  [ "06:19:00", "M75", "" ],
+  [ "06:45:00", "M30", "L'objet le plus difficile !" ],
+ ]
+
+function setup() {
+  core.debug("Setting up environment");
+
+  // Save the current state of Stellarium.
+  initialFOV = StelMovementMgr.getCurrentFov();
+  initialAlt = core.getViewAltitudeAngle();
+  initialAzi = core.getViewAzimuthAngle();
+  saveState(initialState);
+
+  // Set options.
+  core.clear("natural");
+  core.setTimeRate(1);
+  core.setTimezone(timezone);
+  core.setDate(messierMarathonDate + "T" + messierMarathonInitialTime, "local");
+  // This is needed so the direction doesn't change.
+  core.moveToAltAzi(initialAlt, initialAzi);
+  StelMovementMgr.zoomTo(defaultZoom, 3);
+  LandscapeMgr.setCurrentLandscapeName(landscape, 0.5);
+  LandscapeMgr.setFlagCardinalPoints(true);
+  core.setSelectedObjectInfo("ShortInfo");
+  // Set various options adequate for the Messier Marathon.
+  LabelMgr.deleteAllLabels();
+  MarkerMgr.deleteAllMarkers();
+  core.setDiskViewport(false);
+  ConstellationMgr.setFlagIsolateSelected(true);
+  ConstellationMgr.setFlagBoundaries(false);
+  ConstellationMgr.setFlagLines(true);
+  StelMovementMgr.setEquatorialMount(false);
+  LandscapeMgr.setFlagLandscape(true);
+  LandscapeMgr.setFlagAtmosphere(true);
+}
+
+function restore() {
+  core.debug("Restore initial environment");
+  LabelMgr.deleteAllLabels();
+
+  // Restore the state of Stellarium before running the script.
+  restoreState(initialState);
+  StelMovementMgr.zoomTo(initialFOV, 3);
+  core.moveToAltAzi(initialAlt, initialAzi);
+}
+
+function messierMarathon(startObject = 1, endObject = 110) {
+  for (i = startObject - 1; i < endObject; i++) {
+    // Set time to object observing time.
+    objShowTime = messierObjects[i][0];
+    core.setDate(messierMarathonDate + "T" + objShowTime, "local");
+    // Set name and comment to object name.
+    objName = messierObjects[i][1];
+    objComment = messierObjects[i][2];
+
+    // Select and center object.
+    core.selectObjectByName(objName, true);
+    StelMovementMgr.setFlagTracking(true);
+
+    // Print object info to screen.
+    var labelText = core.getDate("local").substring(11,16) + " : " + objName;
+    if (showComments) {
+      labelText += ", " + objComment
+    }
+    var label = LabelMgr.labelScreen(labelText, 60, 600, true, 30, "#00ff00");
+    core.wait(3);
+
+    StelMovementMgr.zoomTo(focusedZoom, 3);
+    core.wait(2);
+    LabelMgr.deleteLabel(label);
+
+    if (core.getViewAltitudeAngle() > 0) {
+      core.setDiskViewport(true);
+      core.wait(4);
+      core.setDiskViewport(false);
+    }
+
+    LabelMgr.labelObject(objName, objName, true, 14, "#ff0000", "E", -1.0, "TextOnly", false, 0);
+
+    StelMovementMgr.zoomTo(defaultZoom, 2);
+    core.wait(2);
+  }
+}
+
+// Main program starts here.
+core.wait(0.5);
+setup();
+core.wait(0.5);
+LabelMgr.labelScreen(titleText, 60, 200, true, 30, "#ff0000");
+core.wait(3);
+messierMarathon(1, 110)
+core.wait(3);
+restore();
+
+// The end.
