@@ -1,11 +1,12 @@
 //
-// Name: Messier Marathon from Épendes
+// Name: Messier Marathon from Épendes Observatory, Switzerland
 // Author: Nicolas Martignoni
-// Version: 1.0
+// Version: 1.2
 // License: GPL3
-// Description: Messier Marathon script for the Observatory of Épendes.
+// Description: Messier Marathon script for the Observatory of Épendes, Switzerland.
+
 // Based on code provided by ultrapre@github.com.
-// Made on Stellarium 23.1
+// Made on Stellarium 26.2.0
 // Script reference: https://stellarium.org/doc/head/classStelMainScriptAPI.html
 
 // Include Stellarium standard translation, objects and save_state libraries.
@@ -18,9 +19,9 @@ var defaultZoom = 80; // Set zoomed out field of view, in degrees.
 var focusedZoom = 3.2; // Set zoomed in field of view, in degrees.
 var landscape = "Épendes Observatory"; // Set landscape and location to use.
 var messierMarathonInitialTime = "19:15:00" // Set initial time of script.
-var messierMarathonDate = "2023-03-20"; // Set date of script.
+var messierMarathonDate = "2026-03-21"; // Set date of script.
 var timezone = "UTC+01:00"; // Set timezone to CET (winter time).
-var titleText = "Marathon de Messier à l'Observatoire d'Épendes"; // Set title.
+var titleText = "Marathon de Messier à l'Observatoire d'Épendes, " + messierMarathonDate; // Set title.
 var showComments = true; // Show/hide comments.
 
 // Define saved state global variables.
@@ -204,7 +205,7 @@ function messierMarathon(startObject = 1, endObject = 110) {
     if (showComments) {
       labelText += ", " + objComment
     }
-    var label = LabelMgr.labelScreen(labelText, 60, 600, true, 30, "#00ff00");
+    var label = LabelMgr.labelScreen(labelText, 60, 600, true, 27, "#884ea0");
     core.wait(3);
 
     StelMovementMgr.zoomTo(focusedZoom, 3);
@@ -217,7 +218,7 @@ function messierMarathon(startObject = 1, endObject = 110) {
       core.setDiskViewport(false);
     }
 
-    LabelMgr.labelObject(objName, objName, true, 14, "#ff0000", "E", -1.0, "TextOnly", false, 0);
+    LabelMgr.labelObject(objName, objName, true, 14, "#239b56", "SE", -1.0, "TextOnly", false, 0);
 
     StelMovementMgr.zoomTo(defaultZoom, 2);
     core.wait(2);
@@ -228,7 +229,7 @@ function messierMarathon(startObject = 1, endObject = 110) {
 core.wait(0.5);
 setup();
 core.wait(0.5);
-LabelMgr.labelScreen(titleText, 60, 200, true, 30, "#ff0000");
+LabelMgr.labelScreen(titleText, 60, 200, true, 36, "#884ea0");
 core.wait(3);
 messierMarathon(1, 110)
 core.wait(3);
