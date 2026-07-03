@@ -1,7 +1,7 @@
 //
 // Name: Messier Marathon from Épendes Observatory, Switzerland
 // Author: Nicolas Martignoni
-// Version: 1.3
+// Version: 1.4
 // License: GPL3
 // Description: Messier Marathon script for the Observatory of Épendes, Switzerland.
 
@@ -20,8 +20,9 @@ var landscape = "Épendes Observatory"; // Set landscape and location to use.
 var messierMarathonInitialTime = "19:15:00" // Set initial time of script.
 var messierMarathonDate = "2026-03-21"; // Set date of script.
 var timezone = "UTC+01:00"; // Set timezone to CET (winter time).
-var titleText = "Marathon de Messier à l'Observatoire d'Épendes, " + messierMarathonDate; // Set title.
+var titleText = "Marathon de Messier, Observatoire d'Épendes, " + messierMarathonDate; // Set title.
 var showComments = true; // Show/hide comments.
+var pauseFactor = 1; // 1 = normal, reduce to accelerate the pace (for debugging).
 
 // Define saved state global variables.
 var initialState = "initialState";
@@ -186,41 +187,37 @@ function restore() {
   core.moveToAltAzi(initialAlt, initialAzi);
 }
 
-function messierMarathon(startObject = 1, endObject = 110) {
-  for (i = startObject - 1; i < endObject; i++) {
+function messierMarathon(objects = messierObjects) {
+  for (const [objShowTime, objName, objComment] of objects) {
     // Set time to object observing time.
-    objShowTime = messierObjects[i][0];
     core.setDate(messierMarathonDate + "T" + objShowTime, "local");
-    // Set name and comment to object name.
-    objName = messierObjects[i][1];
-    objComment = messierObjects[i][2];
 
     // Select and center object.
     core.selectObjectByName(objName, true);
     StelMovementMgr.setFlagTracking(true);
 
     // Print object info to screen.
-    var labelText = core.getDate("local").substring(11,16) + " : " + objName;
+    var labelText = core.getDate("local").substring(11,16) + ", " + objName;
     if (showComments) {
-      labelText += ", " + objComment
+      labelText += " – " + objComment
     }
     var label = LabelMgr.labelScreen(labelText, 60, 600, true, 27, "#884ea0");
-    core.wait(3);
+    core.wait(3*pauseFactor);
 
     StelMovementMgr.zoomTo(focusedZoom, 3);
-    core.wait(2);
+    core.wait(2*pauseFactor);
     LabelMgr.deleteLabel(label);
 
     if (core.getViewAltitudeAngle() > 0) {
       core.setDiskViewport(true);
-      core.wait(4);
+      core.wait(4*pauseFactor);
       core.setDiskViewport(false);
     }
 
     LabelMgr.labelObject(objName, objName, true, 14, "#239b56", "SE", -1.0, "TextOnly", false, 0);
 
     StelMovementMgr.zoomTo(defaultZoom, 2);
-    core.wait(2);
+    core.wait(2*pauseFactor);
   }
 }
 
@@ -230,7 +227,7 @@ setup();
 core.wait(0.5);
 LabelMgr.labelScreen(titleText, 60, 200, true, 36, "#884ea0");
 core.wait(3);
-messierMarathon(1, 110)
+messierMarathon(messierObjects);
 core.wait(3);
 restore();
 
