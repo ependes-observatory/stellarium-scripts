@@ -1,7 +1,7 @@
 //
 // Name: Messier Marathon from Épendes Observatory, Switzerland
 // Author: Nicolas Martignoni
-// Version: 1.4
+// Version: 1.5
 // License: GPL3
 // Description: Messier Marathon script for the Observatory of Épendes, Switzerland.
 
@@ -197,16 +197,16 @@ function messierMarathon(objects = messierObjects) {
     StelMovementMgr.setFlagTracking(true);
 
     // Print object info to screen.
-    var labelText = core.getDate("local").substring(11,16) + ", " + objName;
+    var labelText1 = core.getDate("local").substring(11,16) + " – " + objName;
+    var label = LabelMgr.labelScreen(labelText1, 60, 600, true, 27, "#884ea0", true, 4000*pauseFactor);
     if (showComments) {
-      labelText += " – " + objComment
+      labelText2 = objComment;
+      var label = LabelMgr.labelScreen(labelText2, 60, 640, true, 27, "#884ea0", true, 4000*pauseFactor);
     }
-    var label = LabelMgr.labelScreen(labelText, 60, 600, true, 27, "#884ea0");
     core.wait(3*pauseFactor);
 
     StelMovementMgr.zoomTo(focusedZoom, 3);
     core.wait(2*pauseFactor);
-    LabelMgr.deleteLabel(label);
 
     if (core.getViewAltitudeAngle() > 0) {
       core.setDiskViewport(true);
@@ -214,7 +214,7 @@ function messierMarathon(objects = messierObjects) {
       core.setDiskViewport(false);
     }
 
-    LabelMgr.labelObject(objName, objName, true, 14, "#239b56", "SE", -1.0, "TextOnly", false, 0);
+    LabelMgr.labelObject(objName, objName, true, 14, "#239b56", "SE", -1.0, "TextOnly");
 
     StelMovementMgr.zoomTo(defaultZoom, 2);
     core.wait(2*pauseFactor);
@@ -225,7 +225,7 @@ function messierMarathon(objects = messierObjects) {
 core.wait(0.5);
 setup();
 core.wait(0.5);
-LabelMgr.labelScreen(titleText, 60, 200, true, 36, "#884ea0");
+LabelMgr.labelScreen(titleText, 60, 200, true, 36, "#884ea0", true, 3000);
 core.wait(3);
 messierMarathon(messierObjects);
 core.wait(3);
