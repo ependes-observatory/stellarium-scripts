@@ -6,7 +6,7 @@
 // Description: Messier Marathon script for the Observatory of Épendes, Switzerland.
 
 // Made on Stellarium 26.2.0
-// Script reference: https://stellarium.org/doc/head/classStelMainScriptAPI.html
+// Script reference: https://stellarium.org/doc/head/scripting.html
 
 // Include Stellarium standard translation, objects and save_state libraries.
 include("i18n.inc");
